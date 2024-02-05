@@ -9,20 +9,22 @@
   <h1>WebRTC Gyroscope Example</h1>
   
   <div id="gyroscopeData"></div>
+  <div id="errorMessages"></div>
 
   <script>
     // Function to handle gyroscope data streaming
     function streamGyroscopeData() {
-        
     
       if (!('Gyroscope' in window)) {
         alert('Gyroscope not supported in this device/browser.');
+        document.getElementById('errorMessages').innerText = "gyroscope not supported by browser"
         return;
       }
       
       // Request permission to access gyroscope
       if (!('permissions' in navigator)) {
         alert('Web browser does not support permissions API.');
+        document.getElementById('errorMessages').innerText = "Web browser does not support permissions API"
         return;
       }
       
@@ -38,26 +40,24 @@
             console.log(`Angular velocity along the X-axis ${gyroscope.x}`);
             console.log(`Angular velocity along the Y-axis ${gyroscope.y}`);
             console.log(`Angular velocity along the Z-axis ${gyroscope.z}`);
+            const gyroscopeData = {
+                x: gyroscope.x,
+                y: gyroscope.y,
+                z: gyroscope.z
+              };
+            document.getElementById('gyroscopeData').innerText = JSON.stringify(gyroscopeData);
             });
-
-            // gyroscope.addEventListener('reading', () => {
-            //   const gyroscopeData = {
-            //     alpha: gyroscope.x,
-            //     beta: gyroscope.y,
-            //     gamma: gyroscope.z
-            //   };
-
-            //   // Send gyroscope data to the server or process it locally
-            //   // For simplicity, we'll just display the data on the web page
-            //   document.getElementById('gyroscopeData').innerText = JSON.stringify(gyroscopeData);
-            // });
 
             gyroscope.start();
           } else {
             alert('Permission to access gyroscope denied.');
+            document.getElementById('errorMessages').innerText = "Permission to access gyro denied"
           }
         })
-        .catch(error => console.error('Error querying gyroscope permission:', error));
+        .catch(error => {
+            console.error('Error querying gyroscope permission:', error)
+            document.getElementById('errorMessages').innerText = error
+        });
     }
 
     // Call the function to start streaming gyroscope data when the page loads
