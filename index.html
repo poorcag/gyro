@@ -9,6 +9,7 @@
   <h1>WebRTC Gyroscope Example</h1>
   
   <div id="gyroscopeData"></div>
+  <div id="accelerometerData"></div>
   <div id="errorMessages"></div>
 
   <script>
@@ -20,6 +21,12 @@
         document.getElementById('errorMessages').innerText = "gyroscope not supported by browser"
         return;
       }
+
+      if (!('Accelerometer' in window)) {
+        alert('Accelerometer not supported in this device/browser.');
+        document.getElementById('errorMessages').innerText = "accelerometer not supported by browser"
+        return;
+      }
       
       // Request permission to access gyroscope
       if (!('permissions' in navigator)) {
@@ -27,6 +34,34 @@
         document.getElementById('errorMessages').innerText = "Web browser does not support permissions API"
         return;
       }
+
+      navigator.permissions.query({ name: 'accelerometer' })
+        .then(permission => {
+          if (permission.state === 'granted') {
+            let acl = new Accelerometer({ frequency: 60 });
+            acl.addEventListener("reading", () => {
+              console.log(`Acceleration along the X-axis ${acl.x}`);
+              console.log(`Acceleration along the Y-axis ${acl.y}`);
+              console.log(`Acceleration along the Z-axis ${acl.z}`);
+
+              const accelerometerData = {
+                x: acl.x,
+                y: acl.y,
+                z: acl.z
+              }
+              document.getElementById('accelerometerData').innerText = JSON.stringify(accelerometerData)
+            });
+
+            acl.start();
+          } else {
+            alert('Permission to access accelerometer denied.');
+            document.getElementById('errorMessages').innerText = "Permission to access accelerometer denied"
+          }
+        })
+        .catch(error => {
+            console.error('Error querying accelerometer permission:', error)
+            document.getElementById('errorMessages').innerText = error
+        });
       
       navigator.permissions.query({ name: 'gyroscope' })
         .then(permission => {
