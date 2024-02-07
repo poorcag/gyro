@@ -18,7 +18,7 @@ function enableStartButton() {
   }
 
 function createConnection() {
-    
+    const servers = null;
     window.remoteConnection = remoteConnection = new RTCPeerConnection(servers);
     console.log('Created remote peer connection object remoteConnection');
   
