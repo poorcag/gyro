@@ -102,6 +102,22 @@ function onSendChannelStateChange() {
     }
 }
 
+function gotDescription1(desc) {
+    localConnection.setLocalDescription(desc);
+    console.log(`Offer from localConnection\n${desc.sdp}`);
+    remoteConnection.setRemoteDescription(desc);
+    remoteConnection.createAnswer().then(
+        gotDescription2,
+        onCreateSessionDescriptionError
+    );
+}
+
+function gotDescription2(desc) {
+    remoteConnection.setLocalDescription(desc);
+    console.log(`Answer from remoteConnection\n${desc.sdp}`);
+    localConnection.setRemoteDescription(desc);
+}
+
 function initialiseGyroscope() {
     if (!('Gyroscope' in window)) {
         alert('Gyroscope not supported in this device/browser.');
