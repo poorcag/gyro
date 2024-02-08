@@ -4,12 +4,21 @@
   "description": "WebRTC gyroscope controller + Babylon.JS",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node index.html",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build-js": "browserify host/js/main.js -o host/js/bundle.js && browserify device/js/main.js -o device/js/bundle.js",
+    "watch-js": "watchify host/js/main.js -o host/js/bundle.js -v",
+    "watch-client-js": "watchify device/js/main.js -o device/js/bundle.js -v"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "ws": "^8.16.0"
+    "instascan": "^1.0.0",
+    "qrcode": "^1.5.3"
+  },
+  "devDependencies": {
+    "browserify": "latest",
+    "watchify": "latest"
   }
 }
