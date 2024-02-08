@@ -70,6 +70,58 @@
     var outputContainer = document.getElementById("output");
     var outputMessage = document.getElementById("outputMessage");
     var outputData = document.getElementById("outputData");
+    var negotiated = false
+
+  function negotiate(code) {
+    // Assuming code is the result of decoding the QR code using jsQR
+    if (negotiated) {
+      return;
+    }
+    
+    if (code) {
+      negotiated = true;
+      // Extract SDP offer from the QR code data
+      const sdpOffer = {
+        type: 'offer',
+        sdp: code.data // Assuming the SDP offer is directly embedded in the QR code data
+      };
+
+      const configuration = {
+        iceServers: [
+          { urls: 'stun:stun.l.google.com:19302' }
+        ]
+      };
+
+      const peerConnection = new RTCPeerConnection(configuration);
+
+      // Set the remote SDP offer
+      peerConnection.setRemoteDescription(sdpOffer)
+        .then(() => {
+          console.log('Remote SDP offer set successfully.');
+
+          // Create an answer to the SDP offer
+          return peerConnection.createAnswer();
+        })
+        .then((answer) => {
+          // Set local description with the answer
+          return peerConnection.setLocalDescription(answer);
+        })
+        .then(() => {
+          console.log('Local SDP answer set successfully.');
+          outputData.innerText = "Local SDP answer set successfully."
+
+          // At this point, the WebRTC connection should be established
+          // You can start using the peerConnection for further communication
+        })
+        .catch((error) => {
+          console.error('Error setting remote SDP offer:', error);
+          outputData.innerText = "error setting remote SDH offer"
+        });
+    } else {
+      console.error('No QR code detected.');
+      outputData.innerText = "no QR code detected"
+    }
+  }
 
     function drawLine(begin, end, color) {
       canvas.beginPath();
@@ -110,6 +162,7 @@
           outputMessage.hidden = true;
           outputData.parentElement.hidden = false;
           outputData.innerText = code.data;
+          negotiate(code)
         } else {
           outputMessage.hidden = false;
           outputData.parentElement.hidden = true;
