@@ -1,21 +1,21 @@
 
 'use strict';
+function onScanSuccess(decodedText, decodedResult) {
+    // handle the scanned code as you like, for example:
+    console.log(`Code matched = ${decodedText}`, decodedResult);
+}
+  
+function onScanFailure(error) {
+// handle scan failure, usually better to ignore and keep scanning.
+// for example:
+console.warn(`Code scan error = ${error}`);
+}
 
-const Instascan = require('instascan');
-
-let scanner = new Instascan.Scanner({ video: document.getElementById('preview') });
-scanner.addListener('scan', function (content) {
-    console.log(content);
-});
-Instascan.Camera.getCameras().then(function (cameras) {
-if (cameras.length > 0) {
-    scanner.start(cameras[0]);
-    } else {
-        console.error('No cameras found.');
-    }
-    }).catch(function (e) {
-    console.error(e);
-});
+let html5QrcodeScanner = new Html5QrcodeScanner(
+"reader",
+{ fps: 10, qrbox: {width: 250, height: 250} },
+/* verbose= */ false);
+html5QrcodeScanner.render(onScanSuccess, onScanFailure);
 
 // let localConnection;
 // let remoteConnection;
