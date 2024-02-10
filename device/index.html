@@ -70,7 +70,82 @@
     var outputContainer = document.getElementById("output");
     var outputMessage = document.getElementById("outputMessage");
     var outputData = document.getElementById("outputData");
-    var negotiated = false
+    var negotiated = false;
+    var dataChannel = null;
+
+    
+function initialiseGyroscope(data_send_callback) {
+    if (!('Gyroscope' in window)) {
+        alert('Gyroscope not supported in this device/browser.');
+        outputData.innerText = "gyroscope not supported by browser"
+        return;
+    }
+
+    if (!('Accelerometer' in window)) {
+        alert('Accelerometer not supported in this device/browser.');
+        outputData.innerText = "accelerometer not supported by browser"
+        return;
+    }
+      
+    // Request permission to access gyroscope
+    if (!('permissions' in navigator)) {
+        alert('Web browser does not support permissions API.');
+        outputData.innerText = "Web browser does not support permissions API"
+        return;
+    }
+
+    navigator.permissions.query({ name: 'accelerometer' })
+        .then(permission => {
+          if (permission.state === 'granted') {
+            let acl = new Accelerometer({ frequency: 60 });
+            acl.addEventListener("reading", () => {
+              const accelerometerData = {
+                x: acl.x,
+                y: acl.y,
+                z: acl.z
+              }
+              data_send_callback(JSON.stringify(accelerometerData))
+              outputData.innerText = JSON.stringify(accelerometerData)
+            });
+            acl.start();
+          } else {
+            alert('Permission to access accelerometer denied.');
+            outputData.innerText = "Permission to access accelerometer denied"
+          }
+        })
+        .catch(error => {
+            console.error('Error querying accelerometer permission:', error)
+            outputData.innerText = error
+        });
+
+      navigator.permissions.query({ name: 'gyroscope' })
+      .then(permission => {
+        if (permission.state === 'granted') {
+          // Initialize gyroscope
+          // Start streaming gyroscope data
+          
+          let gyroscope = new Gyroscope({ frequency: 60 });
+
+          gyroscope.addEventListener("reading", (e) => {
+          const gyroscopeData = {
+              x: gyroscope.x,
+              y: gyroscope.y,
+              z: gyroscope.z
+            };
+            data_send_callback(JSON.stringify(gyroscopeData));
+          });
+
+          gyroscope.start();
+        } else {
+          alert('Permission to access gyroscope denied.');
+          outputData.innerText = "Permission to access gyro denied"
+        }
+      })
+      .catch(error => {
+          console.error('Error querying gyroscope permission:', error)
+          outputData.innerText = error
+      });
+}
 
   function negotiate(code) {
     // Assuming code is the result of decoding the QR code using jsQR
@@ -109,6 +184,35 @@
         .then(() => {
           console.log('Local SDP answer set successfully.');
           outputData.innerText = "Local SDP answer set successfully."
+
+          // Create a data channel
+          dataChannel = peerConnection.createDataChannel('sensorData');
+
+          // Set up event handlers for the data channel
+          dataChannel.onopen = () => {
+            console.log('Data channel opened.');
+          };
+
+          dataChannel.onclose = () => {
+            console.log('Data channel closed.');
+          };
+
+          dataChannel.onerror = (error) => {
+            console.error('Data channel error:', error);
+          };
+          
+          // Function to send data through the data channel
+          function sendData(data) {
+            if (dataChannel.readyState === 'open') {
+              dataChannel.send(JSON.stringify(data));
+            } else {
+              console.error('Data channel is not open.');
+            }
+          }
+
+          
+
+          initialiseGyroscope(sendData)
 
           // At this point, the WebRTC connection should be established
           // You can start using the peerConnection for further communication
@@ -162,6 +266,7 @@
           outputMessage.hidden = true;
           outputData.parentElement.hidden = false;
           negotiate(code)
+          return;
         } else {
           outputMessage.hidden = false;
           outputData.parentElement.hidden = true;

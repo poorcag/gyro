@@ -9,6 +9,31 @@ const configuration = {
 };
 
 const peerConnection = new RTCPeerConnection(configuration);
+var receiveChannel = null;
+peerConnection.ondatachannel = receiveChannelCallback;
+
+var gyroscopeData = document.getElementById('gyroscopeData')
+
+function receiveChannelCallback(event) {
+  receiveChannel = event.channel;
+  receiveChannel.onmessage = handleReceiveMessage;
+  receiveChannel.onopen = handleReceiveChannelStatusChange;
+  receiveChannel.onclose = handleReceiveChannelStatusChange;
+
+  document.getElementById('canvas').remove()
+}
+
+function handleReceiveMessage(event) {
+  gyroscopeData.innerText = event.data
+}
+
+function handleReceiveChannelStatusChange(event) {
+  if (receiveChannel) {
+    console.log(
+      `Receive channel's status has changed to ${receiveChannel.readyState}`,
+    );
+  }
+}
 
 // Generate SDP offer
 peerConnection.createOffer()
