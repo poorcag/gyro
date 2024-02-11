@@ -62,6 +62,7 @@
     <div id="outputMessage">No QR code detected.</div>
     <div hidden><b>Data:</b> <span id="outputData"></span></div>
   </div>
+  <div id="debugMessage">Debugs<br></div>
   <script>
     var video = document.createElement("video");
     var canvasElement = document.getElementById("canvas");
@@ -70,27 +71,33 @@
     var outputContainer = document.getElementById("output");
     var outputMessage = document.getElementById("outputMessage");
     var outputData = document.getElementById("outputData");
+    var debugs = document.getElementById("debugMessage")
     var negotiated = false;
     var dataChannel = null;
+
+function dbg_log(log) {
+  debugs.appendChild(document.createTextNode(log));
+  debugs.appendChild(document.createElement("br"));
+}
 
     
 function initialiseGyroscope(data_send_callback) {
     if (!('Gyroscope' in window)) {
         alert('Gyroscope not supported in this device/browser.');
-        outputData.innerText = "gyroscope not supported by browser"
+        dbg_log("gyroscope not supported by browser")
         return;
     }
 
     if (!('Accelerometer' in window)) {
         alert('Accelerometer not supported in this device/browser.');
-        outputData.innerText = "accelerometer not supported by browser"
+        dbg_log("accelerometer not supported by browser")
         return;
     }
       
     // Request permission to access gyroscope
     if (!('permissions' in navigator)) {
         alert('Web browser does not support permissions API.');
-        outputData.innerText = "Web browser does not support permissions API"
+        dbg_log("Web browser does not support permissions API")
         return;
     }
 
@@ -105,17 +112,17 @@ function initialiseGyroscope(data_send_callback) {
                 z: acl.z
               }
               data_send_callback(JSON.stringify(accelerometerData))
-              outputData.innerText = JSON.stringify(accelerometerData)
+              dbg_log(JSON.stringify(accelerometerData))
             });
             acl.start();
           } else {
             alert('Permission to access accelerometer denied.');
-            outputData.innerText = "Permission to access accelerometer denied"
+            dbg_log("Permission to access accelerometer denied")
           }
         })
         .catch(error => {
             console.error('Error querying accelerometer permission:', error)
-            outputData.innerText = error
+            dbg_log(error)
         });
 
       navigator.permissions.query({ name: 'gyroscope' })
@@ -138,12 +145,12 @@ function initialiseGyroscope(data_send_callback) {
           gyroscope.start();
         } else {
           alert('Permission to access gyroscope denied.');
-          outputData.innerText = "Permission to access gyro denied"
+          dbg_log("Permission to access gyro denied")
         }
       })
       .catch(error => {
           console.error('Error querying gyroscope permission:', error)
-          outputData.innerText = error
+          dbg_log(error)
       });
 }
 
@@ -183,7 +190,7 @@ function initialiseGyroscope(data_send_callback) {
         })
         .then(() => {
           console.log('Local SDP answer set successfully.');
-          outputData.innerText = "Local SDP answer set successfully."
+          dbg_log("Local SDP answer set successfully.")
 
           // Create a data channel
           dataChannel = peerConnection.createDataChannel('sensorData');
@@ -191,14 +198,17 @@ function initialiseGyroscope(data_send_callback) {
           // Set up event handlers for the data channel
           dataChannel.onopen = () => {
             console.log('Data channel opened.');
+            dbg_log("data channel opened")
           };
 
           dataChannel.onclose = () => {
             console.log('Data channel closed.');
+            dbg_log("Data channel closed")
           };
 
           dataChannel.onerror = (error) => {
             console.error('Data channel error:', error);
+            dbg_log("data channel error " + error)
           };
           
           // Function to send data through the data channel
@@ -207,10 +217,11 @@ function initialiseGyroscope(data_send_callback) {
               dataChannel.send(JSON.stringify(data));
             } else {
               console.error('Data channel is not open.');
+              dbg_log("Data channel is not open")
             }
           }
 
-          
+
 
           initialiseGyroscope(sendData)
 
@@ -219,11 +230,10 @@ function initialiseGyroscope(data_send_callback) {
         })
         .catch((error) => {
           console.error('Error setting remote SDP offer:', error);
-          outputData.innerText = "error setting remote SDH offer"
+          dbg_log("error setting remote SDH offer")
         });
     } else {
       console.error('No QR code detected.');
-      outputData.innerText = "no QR code detected"
     }
   }
 
