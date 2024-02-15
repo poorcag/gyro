@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WebSocket Client</title>
+</head>
+<body>
+  <script>
+    // Replace 'your_server_ip_or_domain' with the actual IP address or domain of your WebSocket server
+    const socket = new WebSocket('ws://localhost:8080');
+
+    // Event listener for WebSocket connection open
+    socket.onopen = function(event) {
+      console.log('WebSocket connected');
+        // Example usage:
+        // Replace the values with actual accelerometer, gyroscope, and screen input data from your phone
+        const accelerometerData = { x: 0.1, y: 0.2, z: 0.3 };
+        const gyroscopeData = { alpha: 0.1, beta: 0.2, gamma: 0.3 };
+        const screenInputData = { touchX: 100, touchY: 200 };
+        sendControlData(accelerometerData, gyroscopeData, screenInputData);
+    };
+
+    // Event listener for WebSocket connection close
+    socket.onclose = function(event) {
+      console.log('WebSocket disconnected');
+    };
+
+    // Event listener for WebSocket errors
+    socket.onerror = function(error) {
+      console.error('WebSocket error:', error);
+    };
+
+    // Function to send control data to the server
+    function sendControlData(accelerometerData, gyroscopeData, screenInputData) {
+      const data = {
+        accelerometer: accelerometerData,
+        gyroscope: gyroscopeData,
+        screenInput: screenInputData
+      };
+      socket.send(JSON.stringify(data));
+    }
+  </script>
+</body>
+</html>

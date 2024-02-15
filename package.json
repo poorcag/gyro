@@ -16,7 +16,8 @@
   "dependencies": {
     "instascan": "^1.0.0",
     "jsqr": "^1.4.0",
-    "qrcode": "^1.5.3"
+    "qrcode": "^1.5.3",
+    "ws": "^8.16.0"
   },
   "devDependencies": {
     "browserify": "latest",
